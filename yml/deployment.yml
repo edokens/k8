@@ -1,0 +1,13 @@
+---
+ - hosts: Master
+   become: yes
+
+   tasks:
+    - name: Clone Application Repo
+      shell: git clone https://github.com/microservices-demo/microservices-demo.git
+
+    - name: Deploy application
+      shell: kubectl create -f complete-demo.yaml
+      args: 
+        chdir: microservices-demo/deploy/kubernetes
+     

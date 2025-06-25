@@ -1,0 +1,24 @@
+---
+ - hosts: Master
+   become: yes
+
+   tasks:
+    - name: create the monitoring namespace using the 00-monitoring-ns.yaml file
+      shell: kubectl create -f 00-monitoring-ns.yaml
+      args:
+        chdir: microservices-demo/deploy/kubernetes/manifests-monitoring
+
+    - name: apply all the prometheus manifests (01-10) in any order
+      shell: kubectl apply $(ls *-prometheus-*.yaml | awk ' { print " -f " $1 } ')
+      args:
+        chdir: microservices-demo/deploy/kubernetes/manifests-monitoring
+      
+    - name: apply the grafana manifests from 20 to 22
+      shell: kubectl apply $(ls *-grafana-*.yaml | awk ' { print " -f " $1 }' | grep -v grafana-import)
+      args:
+        chdir: microservices-demo/deploy/kubernetes/manifests-monitoring
+      
+    - name: import grafana dashboard
+      shell: kubectl apply -f 23-grafana-import-dash-batch.yaml
+      args:
+        chdir: microservices-demo/deploy/kubernetes/manifests-monitoring
